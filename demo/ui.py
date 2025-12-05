@@ -1,8 +1,14 @@
 import gradio as gr
 import os
+import sys
 import pathlib
-from demo.locales import LOCALES
-from demo.processor import IDPhotoProcessor
+
+# 添加当前目录和项目根目录到Python路径
+sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+from locales import LOCALES
+from processor import IDPhotoProcessor
 
 """
 只裁切模式:
@@ -84,7 +90,7 @@ def create_ui(
                             value=LOCALES["size_mode"][DEFAULT_LANG]["choices"][0],
                             min_width=520,
                         )
-                        
+
                     # 尺寸列表
                     with gr.Row(visible=True) as size_list_row:
                         size_list_options = gr.Dropdown(
@@ -124,16 +130,24 @@ def create_ui(
                         label=LOCALES["bg_color"][DEFAULT_LANG]["label"],
                         value=LOCALES["bg_color"][DEFAULT_LANG]["choices"][0],
                     )
-                    
+
                     # 自定义颜色RGB
                     with gr.Row(visible=False) as custom_color_rgb:
-                        custom_color_R = gr.Number(value=0, label="R", minimum=0, maximum=255, interactive=True)
-                        custom_color_G = gr.Number(value=0, label="G", minimum=0, maximum=255, interactive=True)
-                        custom_color_B = gr.Number(value=0, label="B", minimum=0, maximum=255, interactive=True)
-                    
+                        custom_color_R = gr.Number(
+                            value=0, label="R", minimum=0, maximum=255, interactive=True
+                        )
+                        custom_color_G = gr.Number(
+                            value=0, label="G", minimum=0, maximum=255, interactive=True
+                        )
+                        custom_color_B = gr.Number(
+                            value=0, label="B", minimum=0, maximum=255, interactive=True
+                        )
+
                     # 自定义颜色HEX
                     with gr.Row(visible=False) as custom_color_hex:
-                        custom_color_hex_value = gr.Text(value="000000", label="Hex", interactive=True)
+                        custom_color_hex_value = gr.Text(
+                            value="000000", label="Hex", interactive=True
+                        )
 
                     # 渲染模式
                     render_options = gr.Radio(
@@ -141,14 +155,14 @@ def create_ui(
                         label=LOCALES["render_mode"][DEFAULT_LANG]["label"],
                         value=LOCALES["render_mode"][DEFAULT_LANG]["choices"][0],
                     )
-                    
+
                     with gr.Row():
                         # 插件模式
                         plugin_options = gr.CheckboxGroup(
                             label=LOCALES["plugin"][DEFAULT_LANG]["label"],
                             choices=LOCALES["plugin"][DEFAULT_LANG]["choices"],
                             interactive=True,
-                            value=LOCALES["plugin"][DEFAULT_LANG]["value"]
+                            value=LOCALES["plugin"][DEFAULT_LANG]["value"],
                         )
 
                 # TAB2 - 高级参数 ------------------------------------------------
@@ -340,7 +354,7 @@ def create_ui(
                             watermark_text_space,
                         ],
                     )
-                
+
                 # TAB5 - 打印 ------------------------------------------------
                 with gr.Tab(
                     LOCALES["print_tab"][DEFAULT_LANG]["label"]
@@ -351,12 +365,59 @@ def create_ui(
                         value=LOCALES["print_switch"][DEFAULT_LANG]["choices"][0],
                         interactive=True,
                     )
-                
+
+                # TAB6 - 批量处理 ------------------------------------------------
+                with gr.Tab("批量处理") as batch_processing_tab:
+                    with gr.Row():
+                        # 批量上传组件
+                        batch_img_input = gr.Files(
+                            label="上传多张照片",
+                            file_types=["image"],
+                            interactive=True,
+                            file_count="multiple",
+                        )
+
+                    with gr.Row():
+                        # 开始处理按钮
+                        batch_process_btn = gr.Button(
+                            value="开始批量处理", interactive=True
+                        )
+
+                        # 一键下载所有结果按钮
+                        batch_download_all_btn = gr.Button(
+                            value="一键下载所有结果", interactive=False
+                        )
+
+                        # 查看历史记录按钮
+                        batch_view_history_btn = gr.Button(
+                            value="查看历史记录", interactive=True
+                        )
+
+                    # 进度显示组件
+                    batch_progress = gr.Progress()
+
+                    # 任务状态表格
+                    batch_task_table = gr.Dataframe(
+                        headers=["文件名", "状态", "失败原因", "操作"],
+                        datatype=["str", "str", "str", "str"],
+                        interactive=False,
+                        height=300,
+                    )
+
+                    # 结果展示组件
+                    batch_result_gallery = gr.Gallery(
+                        label="处理结果", height=400, format="png", columns=4
+                    )
+
+                    # 历史记录展示组件
+                    batch_history_gallery = gr.Gallery(
+                        label="历史记录", height=400, format="png", columns=4
+                    )
 
                 img_but = gr.Button(
                     LOCALES["button"][DEFAULT_LANG]["label"],
                     elem_id="btn",
-                    variant="primary"
+                    variant="primary",
                 )
 
                 example_images = gr.Examples(
@@ -398,7 +459,7 @@ def create_ui(
                 # 模版照片
                 with gr.Accordion(
                     LOCALES["template_photo"][DEFAULT_LANG]["label"], open=False
-                ) as template_image_accordion:      
+                ) as template_image_accordion:
                     img_output_template = gr.Gallery(
                         label=LOCALES["template_photo"][DEFAULT_LANG]["label"],
                         height=350,
@@ -588,10 +649,13 @@ def create_ui(
 
             def change_color(colors, lang):
                 return {
-                    custom_color_rgb: gr.update(visible = colors == LOCALES["bg_color"][lang]["choices"][-2]),
-                    custom_color_hex: gr.update(visible = colors == LOCALES["bg_color"][lang]["choices"][-1]),
+                    custom_color_rgb: gr.update(
+                        visible=colors == LOCALES["bg_color"][lang]["choices"][-2]
+                    ),
+                    custom_color_hex: gr.update(
+                        visible=colors == LOCALES["bg_color"][lang]["choices"][-1]
+                    ),
                 }
-                
 
             def change_size_mode(size_option_item, lang):
                 choices = LOCALES["size_mode"][lang]["choices"]
@@ -724,6 +788,305 @@ def create_ui(
                 change_image_dpi,
                 inputs=[image_dpi_options, language_options],
                 outputs=[custom_image_dpi_size],
+            )
+
+            # ---------------- 批量处理逻辑 ----------------
+            import json
+            import os
+            import time
+            from PIL import Image
+            import io
+
+            # 任务状态存储
+            batch_tasks = []
+            # 处理结果存储
+            batch_results = []
+            # 历史记录文件路径
+            history_file = os.path.join(root_dir, "batch_processing_history.json")
+
+            # 加载历史记录
+            def load_history():
+                if os.path.exists(history_file):
+                    with open(history_file, "r", encoding="utf-8") as f:
+                        return json.load(f)
+                return []
+
+            # 保存历史记录
+            def save_history(history):
+                with open(history_file, "w", encoding="utf-8") as f:
+                    json.dump(history, f, ensure_ascii=False, indent=4)
+
+            # 更新任务状态表格
+            def update_task_table():
+                return [task[:3] for task in batch_tasks]
+
+            # 批量处理函数
+            def batch_process(files, progress=gr.Progress()):
+                if not files:
+                    return gr.update(visible=True, value="请先上传照片")
+
+                # 重置任务列表和结果列表
+                batch_tasks.clear()
+                batch_results.clear()
+
+                # 初始化任务列表
+                for file in files:
+                    batch_tasks.append([os.path.basename(file.name), "等待", "", ""])
+
+                # 更新任务状态表格
+                gr.update(batch_task_table, value=update_task_table())
+
+                total_files = len(files)
+
+                for i, file in enumerate(files):
+                    # 更新任务状态为处理中
+                    batch_tasks[i][1] = "处理中"
+                    gr.update(batch_task_table, value=update_task_table())
+
+                    progress(
+                        i / total_files, desc=f"正在处理第 {i+1}/{total_files} 张照片"
+                    )
+
+                    try:
+                        # 读取图片
+                        image = gr.load_image(file.name)
+
+                        # 调用现有的处理函数
+                        result = processor.process(
+                            input_image=image,
+                            mode_option=mode_options.value,
+                            size_list_option=size_list_options.value,
+                            color_option=color_options.value,
+                            render_option=render_options.value,
+                            image_kb_options=image_kb_options.value,
+                            custom_color_R=custom_color_R.value,
+                            custom_color_G=custom_color_G.value,
+                            custom_color_B=custom_color_B.value,
+                            custom_color_hex_value=custom_color_hex_value.value,
+                            custom_size_height=custom_size_height_px.value,
+                            custom_size_width=custom_size_width_px.value,
+                            custom_size_height_mm=custom_size_height_mm.value,
+                            custom_size_width_mm=custom_size_width_mm.value,
+                            custom_image_kb=custom_image_kb_size.value,
+                            language=language_options.value,
+                            matting_model_option=matting_model_options.value,
+                            watermark_option=watermark_options.value,
+                            watermark_text=watermark_text_options.value,
+                            watermark_text_color=watermark_text_color.value,
+                            watermark_text_size=watermark_text_size.value,
+                            watermark_text_opacity=watermark_text_opacity.value,
+                            watermark_text_angle=watermark_text_angle.value,
+                            watermark_text_space=watermark_text_space.value,
+                            face_detect_option=face_detect_model_options.value,
+                            head_measure_ratio=head_measure_ratio_option.value,
+                            top_distance_max=top_distance_option.value,
+                            whitening_strength=whitening_option.value,
+                            image_dpi_option=image_dpi_options.value,
+                            custom_image_dpi=custom_image_dpi_size.value,
+                            brightness_strength=brightness_option.value,
+                            contrast_strength=contrast_option.value,
+                            sharpen_strength=sharpen_option.value,
+                            saturation_strength=saturation_option.value,
+                            plugin_option=plugin_options.value,
+                            print_switch=print_options.value,
+                        )
+
+                        # 处理成功
+                        batch_tasks[i][1] = "完成"
+                        batch_tasks[i][3] = "下载"
+
+                        # 保存处理结果
+                        if result[0] is not None:
+                            batch_results.append(
+                                (result[0], f"{os.path.basename(file.name)} - 处理结果")
+                            )
+
+                    except Exception as e:
+                        # 处理失败
+                        batch_tasks[i][1] = "失败"
+                        batch_tasks[i][2] = str(e)
+                        batch_tasks[i][3] = "重试"
+
+                    # 更新任务状态表格
+                    gr.update(batch_task_table, value=update_task_table())
+
+                # 保存到历史记录
+                history = load_history()
+                history.append(
+                    {
+                        "timestamp": time.strftime("%Y-%m-%d %H:%M:%S"),
+                        "tasks": batch_tasks.copy(),
+                        "results": batch_results.copy(),
+                    }
+                )
+                save_history(history)
+
+                # 启用一键下载按钮
+                gr.update(batch_download_all_btn, interactive=True)
+
+                return batch_results
+
+            # 重试处理函数
+            def retry_process(file_name):
+                # 找到对应的任务
+                for i, task in enumerate(batch_tasks):
+                    if task[0] == file_name and task[1] == "失败":
+                        # 更新任务状态为处理中
+                        batch_tasks[i][1] = "处理中"
+                        batch_tasks[i][2] = ""
+                        gr.update(batch_task_table, value=update_task_table())
+
+                        try:
+                            # 重新读取图片
+                            for file in batch_img_input.value:
+                                if os.path.basename(file.name) == file_name:
+                                    image = gr.load_image(file.name)
+                                    break
+
+                            # 调用现有的处理函数
+                            result = processor.process(
+                                input_image=image,
+                                mode_option=mode_options.value,
+                                size_list_option=size_list_options.value,
+                                color_option=color_options.value,
+                                render_option=render_options.value,
+                                image_kb_options=image_kb_options.value,
+                                custom_color_R=custom_color_R.value,
+                                custom_color_G=custom_color_G.value,
+                                custom_color_B=custom_color_B.value,
+                                custom_color_hex_value=custom_color_hex_value.value,
+                                custom_size_height=custom_size_height_px.value,
+                                custom_size_width=custom_size_width_px.value,
+                                custom_size_height_mm=custom_size_height_mm.value,
+                                custom_size_width_mm=custom_size_width_mm.value,
+                                custom_image_kb=custom_image_kb_size.value,
+                                language=language_options.value,
+                                matting_model_option=matting_model_options.value,
+                                watermark_option=watermark_options.value,
+                                watermark_text=watermark_text_options.value,
+                                watermark_text_color=watermark_text_color.value,
+                                watermark_text_size=watermark_text_size.value,
+                                watermark_text_opacity=watermark_text_opacity.value,
+                                watermark_text_angle=watermark_text_angle.value,
+                                watermark_text_space=watermark_text_space.value,
+                                face_detect_option=face_detect_model_options.value,
+                                head_measure_ratio=head_measure_ratio_option.value,
+                                top_distance_max=top_distance_option.value,
+                                whitening_strength=whitening_option.value,
+                                image_dpi_option=image_dpi_options.value,
+                                custom_image_dpi=custom_image_dpi_size.value,
+                                brightness_strength=brightness_option.value,
+                                contrast_strength=contrast_option.value,
+                                sharpen_strength=sharpen_option.value,
+                                saturation_strength=saturation_option.value,
+                                plugin_option=plugin_options.value,
+                                print_switch=print_options.value,
+                            )
+
+                            # 处理成功
+                            batch_tasks[i][1] = "完成"
+                            batch_tasks[i][3] = "下载"
+
+                            # 更新结果列表
+                            if result[0] is not None:
+                                batch_results[i] = (
+                                    result[0],
+                                    f"{file_name} - 处理结果",
+                                )
+
+                        except Exception as e:
+                            # 处理失败
+                            batch_tasks[i][1] = "失败"
+                            batch_tasks[i][2] = str(e)
+                            batch_tasks[i][3] = "重试"
+
+                        # 更新任务状态表格和结果画廊
+                        gr.update(batch_task_table, value=update_task_table())
+                        gr.update(batch_result_gallery, value=batch_results)
+
+                        break
+
+                return gr.update()
+
+            # 一键下载所有结果函数
+            def download_all_results():
+                if not batch_results:
+                    return gr.update(visible=True, value="暂无处理结果")
+
+                # 创建临时目录保存所有结果
+                temp_dir = os.path.join(root_dir, "temp_batch_results")
+                os.makedirs(temp_dir, exist_ok=True)
+
+                # 保存所有结果图片
+                for i, (img, title) in enumerate(batch_results):
+                    img_path = os.path.join(temp_dir, f"result_{i+1}.jpg")
+                    img.save(img_path)
+
+                # 创建压缩文件
+                import zipfile
+
+                zip_path = os.path.join(root_dir, "batch_results.zip")
+                with zipfile.ZipFile(zip_path, "w") as zipf:
+                    for root, dirs, files in os.walk(temp_dir):
+                        for file in files:
+                            zipf.write(os.path.join(root, file), file)
+
+                # 清理临时目录
+                import shutil
+
+                shutil.rmtree(temp_dir)
+
+                return gr.update(visible=True, value="所有结果已打包下载")
+
+            # 查看历史记录函数
+            def view_history():
+                history = load_history()
+                if not history:
+                    return gr.update(visible=True, value="暂无历史记录")
+
+                # 获取最新的历史记录
+                latest_history = history[-1]
+
+                # 显示历史记录结果
+                return latest_history["results"]
+
+            # 绑定批量处理按钮事件
+            batch_process_btn.click(
+                batch_process, inputs=[batch_img_input], outputs=[batch_result_gallery]
+            )
+
+            # 绑定一键下载按钮事件
+            batch_download_all_btn.click(
+                download_all_results, inputs=[], outputs=[batch_notification]
+            )
+
+            # 重试按钮点击事件处理
+            def on_retry_click(file_name):
+                retry_process(file_name)
+                return gr.update()
+
+            # 绑定重试按钮事件
+            batch_task_table.click(
+                on_retry_click,
+                inputs=[batch_task_table.selected_rows],
+                outputs=[batch_task_table],
+            )
+
+            # 查看历史记录函数
+            def view_history():
+                history = load_history()
+                if not history:
+                    return gr.update(visible=True, value="暂无历史记录")
+
+                # 获取最新的历史记录
+                latest_history = history[-1]
+
+                # 显示历史记录结果
+                return latest_history["results"]
+
+            # 绑定查看历史记录按钮事件
+            batch_view_history_btn.click(
+                view_history, inputs=[], outputs=[batch_history_gallery]
             )
 
             img_but.click(

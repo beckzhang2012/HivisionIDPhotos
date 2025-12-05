@@ -12,9 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from demo.utils import csv_to_size_list
-from demo.config import load_configuration
+import sys
 import os
+
+# 添加当前目录到Python路径
+sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+
+from utils import csv_to_size_list
+from config import load_configuration
 
 base_dir = os.path.dirname(os.path.abspath(__file__))
 size_list_dict_CN = csv_to_size_list(os.path.join(base_dir, "assets/size_list_CN.csv"))
