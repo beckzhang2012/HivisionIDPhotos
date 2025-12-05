@@ -680,3 +680,117 @@ class IDPhotoProcessor:
             ),
             None,
         ]
+
+    def batch_process(
+        self,
+        files,
+        mode_option,
+        size_list_option,
+        color_option,
+        render_option,
+        image_kb_options,
+        custom_color_R,
+        custom_color_G,
+        custom_color_B,
+        custom_color_hex_value,
+        custom_size_height,
+        custom_size_width,
+        custom_size_height_mm,
+        custom_size_width_mm,
+        custom_image_kb,
+        language,
+        matting_model_option,
+        watermark_option,
+        watermark_text,
+        watermark_text_color,
+        watermark_text_size,
+        watermark_text_opacity,
+        watermark_text_angle,
+        watermark_text_space,
+        face_detect_option,
+        head_measure_ratio=0.2,
+        top_distance_max=0.12,
+        whitening_strength=0,
+        image_dpi_option=False,
+        custom_image_dpi=None,
+        brightness_strength=0,
+        contrast_strength=0,
+        sharpen_strength=0,
+        saturation_strength=0,
+        plugin_option=[],
+        print_switch=None,
+    ):
+        """批量处理照片"""
+        results = []
+        total_files = len(files)
+        
+        for i, file in enumerate(files):
+            # 更新进度
+            progress = (i + 1) / total_files
+            
+            try:
+                # 读取图片
+                input_image = cv2.imread(file.name)
+                if input_image is None:
+                    results.append({
+                        "file_name": file.name,
+                        "status": "Failed",
+                        "error": "无法读取图片文件",
+                    })
+                    continue
+                
+                # 处理图片
+                result = self.process(
+                    input_image,
+                    mode_option,
+                    size_list_option,
+                    color_option,
+                    render_option,
+                    image_kb_options,
+                    custom_color_R,
+                    custom_color_G,
+                    custom_color_B,
+                    custom_color_hex_value,
+                    custom_size_height,
+                    custom_size_width,
+                    custom_size_height_mm,
+                    custom_size_width_mm,
+                    custom_image_kb,
+                    language,
+                    matting_model_option,
+                    watermark_option,
+                    watermark_text,
+                    watermark_text_color,
+                    watermark_text_size,
+                    watermark_text_opacity,
+                    watermark_text_angle,
+                    watermark_text_space,
+                    face_detect_option,
+                    head_measure_ratio,
+                    top_distance_max,
+                    whitening_strength,
+                    image_dpi_option,
+                    custom_image_dpi,
+                    brightness_strength,
+                    contrast_strength,
+                    sharpen_strength,
+                    saturation_strength,
+                    plugin_option,
+                    print_switch,
+                )
+                
+                # 保存结果
+                results.append({
+                    "file_name": file.name,
+                    "status": "Completed",
+                    "result": result,
+                })
+                
+            except Exception as e:
+                results.append({
+                    "file_name": file.name,
+                    "status": "Failed",
+                    "error": str(e),
+                })
+        
+        return results

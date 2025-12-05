@@ -182,22 +182,30 @@ LOCALES = {
     "bg_color": {
         "en": {
             "label": "Background color",
-            "choices": list(color_list_dict_EN.keys()) + ["American Style"] + ["Custom(RGB)", "Custom(HEX)"],
+            "choices": list(color_list_dict_EN.keys())
+            + ["American Style"]
+            + ["Custom(RGB)", "Custom(HEX)"],
             "develop": color_list_dict_EN,
         },
         "zh": {
             "label": "背景颜色",
-            "choices": list(color_list_dict_CN.keys()) + ["美式证件照"] + ["自定义(RGB)", "自定义(HEX)"],
+            "choices": list(color_list_dict_CN.keys())
+            + ["美式证件照"]
+            + ["自定义(RGB)", "自定义(HEX)"],
             "develop": color_list_dict_CN,
         },
         "ja": {
             "label": "背景色",
-            "choices": list(color_list_dict_EN.keys()) + ["American Style"] + ["カスタム(RGB)", "カスタム(HEX)"],
+            "choices": list(color_list_dict_EN.keys())
+            + ["American Style"]
+            + ["カスタム(RGB)", "カスタム(HEX)"],
             "develop": color_list_dict_EN,
         },
         "ko": {
             "label": "배경색",
-            "choices": list(color_list_dict_EN.keys()) + ["American Style"] + ["사용자 지정(RGB)", "사용자 지정(HEX)"],
+            "choices": list(color_list_dict_EN.keys())
+            + ["American Style"]
+            + ["사용자 지정(RGB)", "사용자 지정(HEX)"],
             "develop": color_list_dict_EN,
         },
     },
@@ -670,23 +678,40 @@ LOCALES = {
     "plugin": {
         "en": {
             "label": "🤖Plugin",
-            "choices": ["Face Alignment", "Horizontal Flip", "Layout Photo Crop Line", "JPEG Format", "Five Inch Paper"],
-            "value": ["Layout Photo Crop Line"]
+            "choices": [
+                "Face Alignment",
+                "Horizontal Flip",
+                "Layout Photo Crop Line",
+                "JPEG Format",
+                "Five Inch Paper",
+            ],
+            "value": ["Layout Photo Crop Line"],
         },
         "zh": {
             "label": "🤖插件",
             "choices": ["人脸旋转对齐", "水平翻转", "排版照裁剪线", "JPEG格式"],
-            "value": ["排版照裁剪线"]
+            "value": ["排版照裁剪线"],
         },
         "ja": {
             "label": "🤖プラグイン",
-            "choices": ["顔の整列", "水平反転", "レイアウト写真の切り取り線", "JPEGフォーマット"],
-            "value": ["レイアウト写真の切り取り線"]
+            "choices": [
+                "顔の整列",
+                "水平反転",
+                "レイアウト写真の切り取り線",
+                "JPEGフォーマット",
+            ],
+            "value": ["レイアウト写真の切り取り線"],
         },
         "ko": {
             "label": "🤖플러그인",
-            "choices": ["얼굴 정렬", "수평 반전", "레이아웃 사진 자르기 선", "JPEG 포맷", "오렌지 사진"],
-            "value": ["레이아웃 사진 자르기 선"]
+            "choices": [
+                "얼굴 정렬",
+                "수평 반전",
+                "레이아웃 사진 자르기 선",
+                "JPEG 포맷",
+                "오렌지 사진",
+            ],
+            "value": ["레이아웃 사진 자르기 선"],
         },
     },
     "template_photo": {
@@ -718,22 +743,88 @@ LOCALES = {
         },
     },
     "print_switch": {
-        "shape": [[1205, 1795], [1051, 1500], [2479, 3508], [1051, 1500], [1205, 1795]],
         "en": {
-            "label": "Paper size",
-            "choices": ["6 inch", "5 inch", "A4", "3R", "4R"],
+            "label": "Print layout",
+            "choices": ["None", "3.5x5 inch", "4x6 inch", "5x7 inch", "A4"],
         },
         "zh": {
-            "label": "相纸选择",
-            "choices": ["六寸", "五寸", "A4", "3R", "4R"],
+            "label": "打印排版",
+            "choices": ["无", "3.5x5英寸", "4x6英寸", "5x7英寸", "A4"],
         },
         "ja": {
-            "label": "用紙サイズ",
-            "choices": ["6インチ", "5インチ", "A4", "3R", "4R"],
+            "label": "印刷レイアウト",
+            "choices": ["なし", "3.5x5インチ", "4x6インチ", "5x7インチ", "A4"],
         },
         "ko": {
-            "label": "용지 사이즈",
-            "choices": ["6인치", "5인치", "A4", "3R", "4R"],
+            "label": "인쇄 레이아웃",
+            "choices": ["없음", "3.5x5 인치", "4x6 인치", "5x7 인치", "A4"],
+        },
+        "shape": [(2480, 3508), (1200, 1800), (1800, 2400), (2100, 2970), (3508, 2480)],
+    },
+    "batch_process": {
+        "en": {
+            "label": "Batch Processing",
+            "upload_label": "Upload multiple photos",
+            "process_button": "Start Batch Processing",
+            "download_all_button": "Download All Results",
+            "progress_label": "Processing Progress",
+            "status_pending": "Pending",
+            "status_processing": "Processing...",
+            "status_completed": "Completed",
+            "status_failed": "Failed",
+            "download_button": "Download",
+            "total_progress": "Total Progress",
+            "file_name": "File Name",
+            "status": "Status",
+            "actions": "Actions",
+        },
+        "zh": {
+            "label": "批量处理",
+            "upload_label": "上传多张照片",
+            "process_button": "开始批量处理",
+            "download_all_button": "下载所有结果",
+            "progress_label": "处理进度",
+            "status_pending": "待处理",
+            "status_processing": "处理中...",
+            "status_completed": "已完成",
+            "status_failed": "失败",
+            "download_button": "下载",
+            "total_progress": "总进度",
+            "file_name": "文件名",
+            "status": "状态",
+            "actions": "操作",
+        },
+        "ja": {
+            "label": "バッチ処理",
+            "upload_label": "複数の写真をアップロード",
+            "process_button": "バッチ処理開始",
+            "download_all_button": "すべての結果をダウンロード",
+            "progress_label": "処理進捗",
+            "status_pending": "保留中",
+            "status_processing": "処理中...",
+            "status_completed": "完了",
+            "status_failed": "失敗",
+            "download_button": "ダウンロード",
+            "total_progress": "総進捗",
+            "file_name": "ファイル名",
+            "status": "状態",
+            "actions": "操作",
+        },
+        "ko": {
+            "label": "배치 처리",
+            "upload_label": "여러 사진 업로드",
+            "process_button": "배치 처리 시작",
+            "download_all_button": "모든 결과 다운로드",
+            "progress_label": "처리 진행 상황",
+            "status_pending": "대기 중",
+            "status_processing": "처리 중...",
+            "status_completed": "완료",
+            "status_failed": "실패",
+            "download_button": "다운로드",
+            "total_progress": "총 진행 상황",
+            "file_name": "파일 이름",
+            "status": "상태",
+            "actions": "작업",
         },
     },
 }
