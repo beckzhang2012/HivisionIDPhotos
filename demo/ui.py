@@ -84,7 +84,7 @@ def create_ui(
                             value=LOCALES["size_mode"][DEFAULT_LANG]["choices"][0],
                             min_width=520,
                         )
-                        
+
                     # 尺寸列表
                     with gr.Row(visible=True) as size_list_row:
                         size_list_options = gr.Dropdown(
@@ -124,16 +124,24 @@ def create_ui(
                         label=LOCALES["bg_color"][DEFAULT_LANG]["label"],
                         value=LOCALES["bg_color"][DEFAULT_LANG]["choices"][0],
                     )
-                    
+
                     # 自定义颜色RGB
                     with gr.Row(visible=False) as custom_color_rgb:
-                        custom_color_R = gr.Number(value=0, label="R", minimum=0, maximum=255, interactive=True)
-                        custom_color_G = gr.Number(value=0, label="G", minimum=0, maximum=255, interactive=True)
-                        custom_color_B = gr.Number(value=0, label="B", minimum=0, maximum=255, interactive=True)
-                    
+                        custom_color_R = gr.Number(
+                            value=0, label="R", minimum=0, maximum=255, interactive=True
+                        )
+                        custom_color_G = gr.Number(
+                            value=0, label="G", minimum=0, maximum=255, interactive=True
+                        )
+                        custom_color_B = gr.Number(
+                            value=0, label="B", minimum=0, maximum=255, interactive=True
+                        )
+
                     # 自定义颜色HEX
                     with gr.Row(visible=False) as custom_color_hex:
-                        custom_color_hex_value = gr.Text(value="000000", label="Hex", interactive=True)
+                        custom_color_hex_value = gr.Text(
+                            value="000000", label="Hex", interactive=True
+                        )
 
                     # 渲染模式
                     render_options = gr.Radio(
@@ -141,14 +149,14 @@ def create_ui(
                         label=LOCALES["render_mode"][DEFAULT_LANG]["label"],
                         value=LOCALES["render_mode"][DEFAULT_LANG]["choices"][0],
                     )
-                    
+
                     with gr.Row():
                         # 插件模式
                         plugin_options = gr.CheckboxGroup(
                             label=LOCALES["plugin"][DEFAULT_LANG]["label"],
                             choices=LOCALES["plugin"][DEFAULT_LANG]["choices"],
                             interactive=True,
-                            value=LOCALES["plugin"][DEFAULT_LANG]["value"]
+                            value=LOCALES["plugin"][DEFAULT_LANG]["value"],
                         )
 
                 # TAB2 - 高级参数 ------------------------------------------------
@@ -301,46 +309,21 @@ def create_ui(
                     watermark_text_angle = gr.Slider(
                         minimum=0,
                         maximum=360,
-                        value=30,
+                        value=45,
                         label=LOCALES["watermark_angle"][DEFAULT_LANG]["label"],
                         interactive=False,
                         step=1,
                     )
 
                     watermark_text_space = gr.Slider(
-                        minimum=10,
-                        maximum=200,
-                        value=25,
+                        minimum=0,
+                        maximum=100,
+                        value=10,
                         label=LOCALES["watermark_space"][DEFAULT_LANG]["label"],
                         interactive=False,
                         step=1,
                     )
 
-                    def update_watermark_text_visibility(choice, language):
-                        return [
-                            gr.update(
-                                interactive=(
-                                    choice
-                                    == LOCALES["watermark_switch"][language]["choices"][
-                                        1
-                                    ]
-                                )
-                            )
-                        ] * 6
-
-                    watermark_options.change(
-                        fn=update_watermark_text_visibility,
-                        inputs=[watermark_options, language_options],
-                        outputs=[
-                            watermark_text_options,
-                            watermark_text_color,
-                            watermark_text_size,
-                            watermark_text_opacity,
-                            watermark_text_angle,
-                            watermark_text_space,
-                        ],
-                    )
-                
                 # TAB5 - 打印 ------------------------------------------------
                 with gr.Tab(
                     LOCALES["print_tab"][DEFAULT_LANG]["label"]
@@ -351,12 +334,114 @@ def create_ui(
                         value=LOCALES["print_switch"][DEFAULT_LANG]["choices"][0],
                         interactive=True,
                     )
-                
+
+                # TAB6 - 批量处理 ------------------------------------------------
+                with gr.Tab("批量处理") as batch_processing_tab:
+                    with gr.Row():
+                        # 批量上传组件
+                        batch_img_input = gr.Files(
+                            label="上传多张照片",
+                            file_types=["image"],
+                            interactive=True,
+                            file_count="multiple",
+                        )
+
+                    with gr.Row():
+                        # 开始处理按钮
+                        batch_process_btn = gr.Button(
+                            value="开始批量处理", interactive=True
+                        )
+
+                        # 一键下载所有结果按钮
+                        batch_download_all_btn = gr.Button(
+                            value="一键下载所有结果", interactive=False
+                        )
+
+                    # 进度显示组件
+                    batch_progress = gr.Progress()
+
+                    # 结果展示组件
+                    batch_result_gallery = gr.Gallery(
+                        label="处理结果", height=400, format="png", columns=4
+                    )
+
+                    # 批量处理函数
+                    def batch_process(files, progress=gr.Progress()):
+                        if not files:
+                            return gr.update(visible=True, value="请先上传照片")
+
+                        results = []
+                        total_files = len(files)
+
+                        for i, file in enumerate(files):
+                            progress(
+                                i / total_files,
+                                desc=f"正在处理第 {i+1}/{total_files} 张照片",
+                            )
+
+                            # 读取图片
+                            image = gr.load_image(file.name)
+
+                            # 调用现有的处理函数
+                            result = processor.process(
+                                input_image=image,
+                                mode_option=mode_options.value,
+                                size_list_option=size_list_options.value,
+                                color_option=color_options.value,
+                                render_option=render_options.value,
+                                image_kb_options=image_kb_options.value,
+                                custom_color_R=custom_color_R.value,
+                                custom_color_G=custom_color_G.value,
+                                custom_color_B=custom_color_B.value,
+                                custom_color_hex_value=custom_color_hex_value.value,
+                                custom_size_height=custom_size_height_px.value,
+                                custom_size_width=custom_size_width_px.value,
+                                custom_size_height_mm=custom_size_height_mm.value,
+                                custom_size_width_mm=custom_size_width_mm.value,
+                                custom_image_kb=custom_image_kb_size.value,
+                                language=language_options.value,
+                                matting_model_option=matting_model_options.value,
+                                watermark_option=watermark_options.value,
+                                watermark_text=watermark_text_options.value,
+                                watermark_text_color=watermark_text_color.value,
+                                watermark_text_size=watermark_text_size.value,
+                                watermark_text_opacity=watermark_text_opacity.value,
+                                watermark_text_angle=watermark_text_angle.value,
+                                watermark_text_space=watermark_text_space.value,
+                                face_detect_option=face_detect_model_options.value,
+                                head_measure_ratio=head_measure_ratio_option.value,
+                                top_distance_max=top_distance_option.value,
+                                whitening_strength=whitening_option.value,
+                                image_dpi_option=image_dpi_options.value,
+                                custom_image_dpi=custom_image_dpi_size.value,
+                                brightness_strength=brightness_option.value,
+                                contrast_strength=contrast_option.value,
+                                sharpen_strength=sharpen_option.value,
+                                saturation_strength=saturation_option.value,
+                                plugin_option=plugin_options.value,
+                                print_switch=print_options.value,
+                            )
+
+                            # 将处理结果添加到列表中
+                            if result[0] is not None:
+                                results.append((result[0], f"第 {i+1} 张照片"))
+
+                        # 启用一键下载按钮
+                        batch_download_all_btn.update(interactive=True)
+
+                        return results
+
+                    # 绑定批量处理按钮事件
+                    batch_process_btn.click(
+                        batch_process,
+                        inputs=[batch_img_input],
+                        outputs=[batch_result_gallery],
+                    )
 
                 img_but = gr.Button(
                     LOCALES["button"][DEFAULT_LANG]["label"],
                     elem_id="btn",
-                    variant="primary"
+                    variant="primary",
                 )
 
                 example_images = gr.Examples(
@@ -398,7 +483,7 @@ def create_ui(
                 # 模版照片
                 with gr.Accordion(
                     LOCALES["template_photo"][DEFAULT_LANG]["label"], open=False
-                ) as template_image_accordion:      
+                ) as template_image_accordion:
                     img_output_template = gr.Gallery(
                         label=LOCALES["template_photo"][DEFAULT_LANG]["label"],
                         height=350,
@@ -588,10 +673,13 @@ def create_ui(
 
             def change_color(colors, lang):
                 return {
-                    custom_color_rgb: gr.update(visible = colors == LOCALES["bg_color"][lang]["choices"][-2]),
-                    custom_color_hex: gr.update(visible = colors == LOCALES["bg_color"][lang]["choices"][-1]),
+                    custom_color_rgb: gr.update(
+                        visible=colors == LOCALES["bg_color"][lang]["choices"][-2]
+                    ),
+                    custom_color_hex: gr.update(
+                        visible=colors == LOCALES["bg_color"][lang]["choices"][-1]
+                    ),
                 }
-                
 
             def change_size_mode(size_option_item, lang):
                 choices = LOCALES["size_mode"][lang]["choices"]
