@@ -45,6 +45,9 @@ def create_ui(
 
     demo = gr.Blocks(title="HivisionIDPhotos")
 
+    # 批量处理结果存储
+    batch_results_state = gr.State([])
+
     with demo:
         gr.HTML(load_description(os.path.join(root_dir, "demo/assets/title.md")))
         with gr.Row():
@@ -84,7 +87,7 @@ def create_ui(
                             value=LOCALES["size_mode"][DEFAULT_LANG]["choices"][0],
                             min_width=520,
                         )
-                        
+
                     # 尺寸列表
                     with gr.Row(visible=True) as size_list_row:
                         size_list_options = gr.Dropdown(
@@ -124,16 +127,24 @@ def create_ui(
                         label=LOCALES["bg_color"][DEFAULT_LANG]["label"],
                         value=LOCALES["bg_color"][DEFAULT_LANG]["choices"][0],
                     )
-                    
+
                     # 自定义颜色RGB
                     with gr.Row(visible=False) as custom_color_rgb:
-                        custom_color_R = gr.Number(value=0, label="R", minimum=0, maximum=255, interactive=True)
-                        custom_color_G = gr.Number(value=0, label="G", minimum=0, maximum=255, interactive=True)
-                        custom_color_B = gr.Number(value=0, label="B", minimum=0, maximum=255, interactive=True)
-                    
+                        custom_color_R = gr.Number(
+                            value=0, label="R", minimum=0, maximum=255, interactive=True
+                        )
+                        custom_color_G = gr.Number(
+                            value=0, label="G", minimum=0, maximum=255, interactive=True
+                        )
+                        custom_color_B = gr.Number(
+                            value=0, label="B", minimum=0, maximum=255, interactive=True
+                        )
+
                     # 自定义颜色HEX
                     with gr.Row(visible=False) as custom_color_hex:
-                        custom_color_hex_value = gr.Text(value="000000", label="Hex", interactive=True)
+                        custom_color_hex_value = gr.Text(
+                            value="000000", label="Hex", interactive=True
+                        )
 
                     # 渲染模式
                     render_options = gr.Radio(
@@ -141,14 +152,14 @@ def create_ui(
                         label=LOCALES["render_mode"][DEFAULT_LANG]["label"],
                         value=LOCALES["render_mode"][DEFAULT_LANG]["choices"][0],
                     )
-                    
+
                     with gr.Row():
                         # 插件模式
                         plugin_options = gr.CheckboxGroup(
                             label=LOCALES["plugin"][DEFAULT_LANG]["label"],
                             choices=LOCALES["plugin"][DEFAULT_LANG]["choices"],
                             interactive=True,
-                            value=LOCALES["plugin"][DEFAULT_LANG]["value"]
+                            value=LOCALES["plugin"][DEFAULT_LANG]["value"],
                         )
 
                 # TAB2 - 高级参数 ------------------------------------------------
@@ -340,7 +351,7 @@ def create_ui(
                             watermark_text_space,
                         ],
                     )
-                
+
                 # TAB5 - 打印 ------------------------------------------------
                 with gr.Tab(
                     LOCALES["print_tab"][DEFAULT_LANG]["label"]
@@ -351,12 +362,151 @@ def create_ui(
                         value=LOCALES["print_switch"][DEFAULT_LANG]["choices"][0],
                         interactive=True,
                     )
-                
+
+                # TAB6 - 批量处理 ------------------------------------------------
+                with gr.Tab(
+                    LOCALES["batch_process"][DEFAULT_LANG]["label"]
+                ) as batch_process_tab:
+                    # 批量上传组件
+                    batch_upload = gr.Files(
+                        label=LOCALES["batch_process"][DEFAULT_LANG]["upload_label"],
+                        file_count="multiple",
+                        file_types=["image"],
+                    )
+
+                    # 批量处理按钮
+                    batch_process_button = gr.Button(
+                        LOCALES["batch_process"][DEFAULT_LANG]["process_button"],
+                        variant="primary",
+                    )
+
+                    # 总进度条
+                    total_progress = gr.Progress(
+                        label=LOCALES["batch_process"][DEFAULT_LANG]["total_progress"],
+                    )
+
+                    # 批量处理结果表格
+                    batch_results = gr.Dataframe(
+                        headers=[
+                            LOCALES["batch_process"][DEFAULT_LANG]["file_name"],
+                            LOCALES["batch_process"][DEFAULT_LANG]["status"],
+                            LOCALES["batch_process"][DEFAULT_LANG]["actions"],
+                        ],
+                        datatype=["str", "str", "html"],
+                        label=LOCALES["batch_process"][DEFAULT_LANG]["progress_label"],
+                    )
+
+                    # 下载所有结果按钮
+                    download_all_button = gr.Button(
+                        LOCALES["batch_process"][DEFAULT_LANG]["download_all_button"],
+                        variant="secondary",
+                    )
+
+                    # 批量处理按钮点击事件
+                    batch_process_button.click(
+                        fn=processor.batch_process,
+                        inputs=[
+                            batch_upload,
+                            mode_options,
+                            size_list_options,
+                            color_options,
+                            render_options,
+                            image_kb_options,
+                            custom_color_R,
+                            custom_color_G,
+                            custom_color_B,
+                            custom_color_hex_value,
+                            custom_size_height_px,
+                            custom_size_width_px,
+                            custom_size_height_mm,
+                            custom_size_width_mm,
+                            custom_image_kb_size,
+                            language_options,
+                            matting_model_options,
+                            watermark_options,
+                            watermark_text_options,
+                            watermark_text_color,
+                            watermark_text_size,
+                            watermark_text_opacity,
+                            watermark_text_angle,
+                            watermark_text_space,
+                            face_detect_model_options,
+                            head_measure_ratio_option,
+                            top_distance_option,
+                            whitening_option,
+                            image_dpi_options,
+                            custom_image_dpi_size,
+                            brightness_option,
+                            contrast_option,
+                            sharpen_option,
+                            saturation_option,
+                            plugin_options,
+                            print_options,
+                        ],
+                        outputs=[batch_results_state],
+                    )
+
+                    # 批量处理结果更新事件
+                    batch_results_state.change(
+                        fn=lambda results: [
+                            gr.update(
+                                value=f"{len([r for r in results if r['status'] == 'Completed'])}/{len(results)}"
+                            ),
+                            gr.update(
+                                value=[
+                                    [
+                                        r["file_name"],
+                                        r["status"],
+                                        f"<button class='download-btn' data-index='{i}'>Download</button>",
+                                    ]
+                                    for i, r in enumerate(results)
+                                ]
+                            ),
+                        ],
+                        inputs=[batch_results_state],
+                        outputs=[total_progress, batch_results],
+                    )
+
+                    # 批量处理结果点击事件（显示预览）
+                    batch_results.click(
+                        fn=lambda results, evt: (
+                            results[evt.index[0]]["result"][0]
+                            if evt.index[1] == 2
+                            else None
+                        ),
+                        inputs=[batch_results_state],
+                        outputs=[img_output_standard],
+                    )
+
+                    # 下载所有按钮点击事件
+                    download_all_button.click(
+                        fn=lambda results: [
+                            r["result"][0]
+                            for r in results
+                            if r["status"] == "Completed"
+                        ],
+                        inputs=[batch_results_state],
+                        outputs=[img_output_standard],
+                    )
+
+                    # 批量处理结果下载事件
+                    batch_results.select(
+                        fn=lambda results, evt: (
+                            gr.update(
+                                value=results[evt.index[0]]["result"][0], visible=True
+                            )
+                            if evt.index[1] == 2
+                            and results[evt.index[0]]["status"] == "Completed"
+                            else gr.update(visible=False)
+                        ),
+                        inputs=[batch_results_state],
+                        outputs=[img_output_standard],
+                    )
 
                 img_but = gr.Button(
                     LOCALES["button"][DEFAULT_LANG]["label"],
                     elem_id="btn",
-                    variant="primary"
+                    variant="primary",
                 )
 
                 example_images = gr.Examples(
@@ -398,7 +548,7 @@ def create_ui(
                 # 模版照片
                 with gr.Accordion(
                     LOCALES["template_photo"][DEFAULT_LANG]["label"], open=False
-                ) as template_image_accordion:      
+                ) as template_image_accordion:
                     img_output_template = gr.Gallery(
                         label=LOCALES["template_photo"][DEFAULT_LANG]["label"],
                         height=350,
@@ -577,6 +727,29 @@ def create_ui(
                         choices=LOCALES["print_switch"][language]["choices"],
                         value=LOCALES["print_switch"][language]["choices"][0],
                     ),
+                    batch_process_tab: gr.update(
+                        label=LOCALES["batch_process"][language]["label"]
+                    ),
+                    batch_upload: gr.update(
+                        label=LOCALES["batch_process"][language]["upload_label"]
+                    ),
+                    batch_process_button: gr.update(
+                        value=LOCALES["batch_process"][language]["process_button"]
+                    ),
+                    download_all_button: gr.update(
+                        value=LOCALES["batch_process"][language]["download_all_button"]
+                    ),
+                    total_progress: gr.update(
+                        label=LOCALES["batch_process"][language]["total_progress"]
+                    ),
+                    batch_results: gr.update(
+                        label=LOCALES["batch_process"][language]["progress_label"],
+                        headers=[
+                            LOCALES["batch_process"][language]["file_name"],
+                            LOCALES["batch_process"][language]["status"],
+                            LOCALES["batch_process"][language]["actions"],
+                        ],
+                    ),
                 }
 
             def change_visibility(option, lang, locales_key, custom_component):
@@ -588,10 +761,13 @@ def create_ui(
 
             def change_color(colors, lang):
                 return {
-                    custom_color_rgb: gr.update(visible = colors == LOCALES["bg_color"][lang]["choices"][-2]),
-                    custom_color_hex: gr.update(visible = colors == LOCALES["bg_color"][lang]["choices"][-1]),
+                    custom_color_rgb: gr.update(
+                        visible=colors == LOCALES["bg_color"][lang]["choices"][-2]
+                    ),
+                    custom_color_hex: gr.update(
+                        visible=colors == LOCALES["bg_color"][lang]["choices"][-1]
+                    ),
                 }
-                
 
             def change_size_mode(size_option_item, lang):
                 choices = LOCALES["size_mode"][lang]["choices"]
@@ -689,6 +865,12 @@ def create_ui(
                     template_image_accordion,
                     print_parameter_tab,
                     print_options,
+                    batch_process_tab,
+                    batch_upload,
+                    batch_process_button,
+                    download_all_button,
+                    total_progress,
+                    batch_results,
                 ],
             )
 
