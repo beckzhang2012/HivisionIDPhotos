@@ -155,6 +155,47 @@ def create_ui(
                 with gr.Tab(
                     LOCALES["advance_param"][DEFAULT_LANG]["label"]
                 ) as advance_parameter_tab:
+
+                # TAB - 批量处理 ------------------------------------------------
+                with gr.Tab(
+                    LOCALES["batch_process"][DEFAULT_LANG]["label"]
+                ) as batch_process_tab:
+                    batch_file_input = gr.File(
+                        label=LOCALES["batch_upload"][DEFAULT_LANG]["label"],
+                        file_count="multiple",
+                        file_types=[".jpg", ".jpeg", ".png", ".bmp"],
+                        elem_id="batch_file_input"
+                    )
+                    
+                    batch_process_btn = gr.Button(
+                        LOCALES["batch_process_btn"][DEFAULT_LANG]["label"],
+                        elem_id="batch_process_btn",
+                        variant="primary"
+                    )
+                    
+                    batch_task_list = gr.Dataframe(
+                        headers=[
+                            LOCALES["task_file"][DEFAULT_LANG]["label"],
+                            LOCALES["task_status"][DEFAULT_LANG]["label"],
+                            LOCALES["task_result"][DEFAULT_LANG]["label"],
+                            LOCALES["task_action"][DEFAULT_LANG]["label"]
+                        ],
+                        datatype=["str", "str", "str", "str"],
+                        label=LOCALES["batch_task_list"][DEFAULT_LANG]["label"],
+                        interactive=False,
+                        elem_id="batch_task_list"
+                    )
+                    
+                    batch_notification = gr.Text(
+                        label=LOCALES["notification"][DEFAULT_LANG]["label"],
+                        visible=False,
+                        elem_id="batch_notification"
+                    )
+
+                # TAB2 - 高级参数 ------------------------------------------------
+                with gr.Tab(
+                    LOCALES["advance_param"][DEFAULT_LANG]["label"]
+                ) as advance_parameter_tab:
                     head_measure_ratio_option = gr.Slider(
                         minimum=0.1,
                         maximum=0.5,
@@ -775,6 +816,53 @@ def create_ui(
                     img_output_template,
                     template_image_accordion,
                     notification,
+                ],
+            )
+            
+            # 批量处理按钮事件绑定
+            batch_process_btn.click(
+                processor.batch_process,
+                inputs=[
+                    batch_file_input,
+                    mode_options,
+                    size_list_options,
+                    color_options,
+                    render_options,
+                    image_kb_options,
+                    custom_color_R,
+                    custom_color_G,
+                    custom_color_B,
+                    custom_color_hex_value,
+                    custom_size_height_px,
+                    custom_size_width_px,
+                    custom_size_height_mm,
+                    custom_size_width_mm,
+                    custom_image_kb_size,
+                    language_options,
+                    matting_model_options,
+                    watermark_options,
+                    watermark_text_options,
+                    watermark_text_color,
+                    watermark_text_size,
+                    watermark_text_opacity,
+                    watermark_text_angle,
+                    watermark_text_space,
+                    face_detect_model_options,
+                    head_measure_ratio_option,
+                    top_distance_option,
+                    whitening_option,
+                    image_dpi_options,
+                    custom_image_dpi_size,
+                    brightness_option,
+                    contrast_option,
+                    sharpen_option,
+                    saturation_option,
+                    plugin_options,
+                    print_options,
+                ],
+                outputs=[
+                    batch_task_list,
+                    batch_notification,
                 ],
             )
 

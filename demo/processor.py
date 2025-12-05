@@ -671,6 +671,93 @@ class IDPhotoProcessor:
 
         return response
 
+    def batch_process(
+        self,
+        input_files,
+        mode_option,
+        size_list_option,
+        color_option,
+        render_option,
+        image_kb_options,
+        custom_color_R,
+        custom_color_G,
+        custom_color_B,
+        custom_color_hex_value,
+        custom_size_height,
+        custom_size_width,
+        custom_size_height_mm,
+        custom_size_width_mm,
+        custom_image_kb,
+        language,
+        matting_model_option,
+        watermark_option,
+        watermark_text,
+        watermark_text_color,
+        watermark_text_size,
+        watermark_text_opacity,
+        watermark_text_angle,
+        watermark_text_space,
+        face_detect_option,
+        head_measure_ratio=0.2,
+        top_distance_max=0.12,
+        whitening_strength=0,
+        image_dpi_option=False,
+        custom_image_dpi=None,
+        brightness_strength=0,
+        contrast_strength=0,
+        sharpen_strength=0,
+        saturation_strength=0,
+        plugin_option=[],
+        print_switch=None,
+    ):
+        """批量处理证件照"""
+        if not input_files:
+            return [[]], gr.update(value="请选择要处理的文件", visible=True)
+        
+        task_results = []
+        
+        for file in input_files:
+            try:
+                # 调用process方法处理单个文件
+                result = self.process(
+                    file, mode_option, size_list_option, color_option, render_option,
+                    image_kb_options, custom_color_R, custom_color_G, custom_color_B,
+                    custom_color_hex_value, custom_size_height, custom_size_width,
+                    custom_size_height_mm, custom_size_width_mm, custom_image_kb, language,
+                    matting_model_option, watermark_option, watermark_text, watermark_text_color,
+                    watermark_text_size, watermark_text_opacity, watermark_text_angle, watermark_text_space,
+                    face_detect_option, head_measure_ratio, top_distance_max, whitening_strength,
+                    image_dpi_option, custom_image_dpi, brightness_strength, contrast_strength,
+                    sharpen_strength, saturation_strength, plugin_option, print_switch
+                )
+                
+                # 如果处理成功，将结果添加到任务列表
+                task_results.append([
+                    file.name,
+                    LOCALES["task_status_completed"][language]["label"],
+                    str(result[0]) if result[0] else "",
+                    LOCALES["task_action_download"][language]["label"]
+                ])
+                
+            except FaceError as e:
+                # 处理人脸检测错误
+                task_results.append([
+                    file.name,
+                    LOCALES["task_status_failed"][language]["label"],
+                    "未检测到人脸",
+                    LOCALES["task_action_retry"][language]["label"]
+                ])
+            except Exception as e:
+                # 处理其他错误
+                task_results.append([
+                    file.name,
+                    LOCALES["task_status_failed"][language]["label"],
+                    str(e),
+                    LOCALES["task_action_retry"][language]["label"]
+                ])
+        
+        return [task_results], gr.update(visible=False)
+
     def _create_error_response(self, language):
         """创建错误响应"""
         return [gr.update(value=None) for _ in range(4)] + [

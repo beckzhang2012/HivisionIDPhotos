@@ -182,22 +182,30 @@ LOCALES = {
     "bg_color": {
         "en": {
             "label": "Background color",
-            "choices": list(color_list_dict_EN.keys()) + ["American Style"] + ["Custom(RGB)", "Custom(HEX)"],
+            "choices": list(color_list_dict_EN.keys())
+            + ["American Style"]
+            + ["Custom(RGB)", "Custom(HEX)"],
             "develop": color_list_dict_EN,
         },
         "zh": {
             "label": "背景颜色",
-            "choices": list(color_list_dict_CN.keys()) + ["美式证件照"] + ["自定义(RGB)", "自定义(HEX)"],
+            "choices": list(color_list_dict_CN.keys())
+            + ["美式证件照"]
+            + ["自定义(RGB)", "自定义(HEX)"],
             "develop": color_list_dict_CN,
         },
         "ja": {
             "label": "背景色",
-            "choices": list(color_list_dict_EN.keys()) + ["American Style"] + ["カスタム(RGB)", "カスタム(HEX)"],
+            "choices": list(color_list_dict_EN.keys())
+            + ["American Style"]
+            + ["カスタム(RGB)", "カスタム(HEX)"],
             "develop": color_list_dict_EN,
         },
         "ko": {
             "label": "배경색",
-            "choices": list(color_list_dict_EN.keys()) + ["American Style"] + ["사용자 지정(RGB)", "사용자 지정(HEX)"],
+            "choices": list(color_list_dict_EN.keys())
+            + ["American Style"]
+            + ["사용자 지정(RGB)", "사용자 지정(HEX)"],
             "develop": color_list_dict_EN,
         },
     },
@@ -670,23 +678,40 @@ LOCALES = {
     "plugin": {
         "en": {
             "label": "🤖Plugin",
-            "choices": ["Face Alignment", "Horizontal Flip", "Layout Photo Crop Line", "JPEG Format", "Five Inch Paper"],
-            "value": ["Layout Photo Crop Line"]
+            "choices": [
+                "Face Alignment",
+                "Horizontal Flip",
+                "Layout Photo Crop Line",
+                "JPEG Format",
+                "Five Inch Paper",
+            ],
+            "value": ["Layout Photo Crop Line"],
         },
         "zh": {
             "label": "🤖插件",
             "choices": ["人脸旋转对齐", "水平翻转", "排版照裁剪线", "JPEG格式"],
-            "value": ["排版照裁剪线"]
+            "value": ["排版照裁剪线"],
         },
         "ja": {
             "label": "🤖プラグイン",
-            "choices": ["顔の整列", "水平反転", "レイアウト写真の切り取り線", "JPEGフォーマット"],
-            "value": ["レイアウト写真の切り取り線"]
+            "choices": [
+                "顔の整列",
+                "水平反転",
+                "レイアウト写真の切り取り線",
+                "JPEGフォーマット",
+            ],
+            "value": ["レイアウト写真の切り取り線"],
         },
         "ko": {
             "label": "🤖플러그인",
-            "choices": ["얼굴 정렬", "수평 반전", "레이아웃 사진 자르기 선", "JPEG 포맷", "오렌지 사진"],
-            "value": ["레이아웃 사진 자르기 선"]
+            "choices": [
+                "얼굴 정렬",
+                "수평 반전",
+                "레이아웃 사진 자르기 선",
+                "JPEG 포맷",
+                "오렌지 사진",
+            ],
+            "value": ["레이아웃 사진 자르기 선"],
         },
     },
     "template_photo": {
@@ -734,6 +759,158 @@ LOCALES = {
         "ko": {
             "label": "용지 사이즈",
             "choices": ["6인치", "5인치", "A4", "3R", "4R"],
+        },
+    },
+    "batch_process": {
+        "en": {
+            "label": "Batch Process",
+        },
+        "zh": {
+            "label": "批量处理",
+        },
+        "ja": {
+            "label": "バッチ処理",
+        },
+        "ko": {
+            "label": "일괄 처리",
+        },
+    },
+    "batch_upload": {
+        "en": {
+            "label": "Upload Files",
+        },
+        "zh": {
+            "label": "上传文件",
+        },
+        "ja": {
+            "label": "ファイルをアップロード",
+        },
+        "ko": {
+            "label": "파일 업로드",
+        },
+    },
+    "batch_process_btn": {
+        "en": {
+            "label": "Process All",
+        },
+        "zh": {
+            "label": "全部处理",
+        },
+        "ja": {
+            "label": "すべて処理",
+        },
+        "ko": {
+            "label": "모두 처리",
+        },
+    },
+    "batch_progress": {
+        "en": {
+            "label": "Processing Progress",
+        },
+        "zh": {
+            "label": "处理进度",
+        },
+        "ja": {
+            "label": "処理の進捗状況",
+        },
+        "ko": {
+            "label": "처리 진행 상황",
+        },
+    },
+    "batch_status": {
+        "en": {
+            "label": "Batch Status",
+        },
+        "zh": {
+            "label": "批量状态",
+        },
+        "ja": {
+            "label": "バッチ状態",
+        },
+        "ko": {
+            "label": "일괄 상태",
+        },
+    },
+    "batch_results": {
+        "en": {
+            "label": "Batch Results",
+        },
+        "zh": {
+            "label": "批量结果",
+        },
+        "ja": {
+            "label": "バッチ結果",
+        },
+        "ko": {
+            "label": "일괄結果",
+        },
+    },
+    "batch_download": {
+        "en": {
+            "label": "Download All",
+        },
+        "zh": {
+            "label": "全部下载",
+        },
+        "ja": {
+            "label": "すべてダウンロード",
+        },
+        "ko": {
+            "label": "모두 다운로드",
+        },
+    },
+    "task_status": {
+        "en": {
+            "waiting": "Waiting",
+            "processing": "Processing",
+            "completed": "Completed",
+            "failed": "Failed",
+        },
+        "zh": {
+            "waiting": "等待中",
+            "processing": "处理中",
+            "completed": "已完成",
+            "failed": "已失败",
+        },
+        "ja": {
+            "waiting": "待機中",
+            "processing": "処理中",
+            "completed": "完了",
+            "failed": "失敗",
+        },
+        "ko": {
+            "waiting": "대기 중",
+            "processing": "처리 중",
+            "completed": "완료",
+            "failed": "실패",
+        },
+    },
+    "task_retry": {
+        "en": {
+            "label": "Retry",
+        },
+        "zh": {
+            "label": "重试",
+        },
+        "ja": {
+            "label": "再試行",
+        },
+        "ko": {
+            "label": "재시도",
+        },
+    },
+    "task_history": {
+        "en": {
+            "label": "Task History",
+        },
+        "zh": {
+            "label": "任务历史",
+        },
+        "ja": {
+            "label": "タスク履歴",
+        },
+        "ko": {
+            "label": "작업 기록",
         },
     },
 }
