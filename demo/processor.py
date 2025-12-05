@@ -24,6 +24,7 @@ from demo.locales import LOCALES
 
 base_path = os.path.dirname(os.path.abspath(__file__))
 
+
 class IDPhotoProcessor:
     def process(
         self,
@@ -63,7 +64,7 @@ class IDPhotoProcessor:
         saturation_strength=0,
         plugin_option=[],
         print_switch=None,
-    ):        
+    ):
         # 初始化参数
         top_distance_min = top_distance_max - 0.02
         # 得到render_option在LOCALES["render_mode"][language]["choices"]中的索引
@@ -91,9 +92,15 @@ class IDPhotoProcessor:
             jpeg_format_option = True
         else:
             jpeg_format_option = False
-        
+
         idphoto_json = self._initialize_idphoto_json(
-            mode_option, color_option, render_option_index, image_kb_options, layout_photo_crop_line_option, jpeg_format_option, print_switch
+            mode_option,
+            color_option,
+            render_option_index,
+            image_kb_options,
+            layout_photo_crop_line_option,
+            jpeg_format_option,
+            print_switch,
         )
 
         # 处理尺寸模式
@@ -367,19 +374,21 @@ class IDPhotoProcessor:
                 watermark_text_space,
                 watermark_text_color,
             )
-        
+
         # 生成排版照片
         result_image_layout, result_image_layout_visible = self._generate_image_layout(
             idphoto_json,
             result_image_standard,
             language,
         )
-        
+
         # 生成模板照片
-        result_image_template, result_image_template_visible = self._generate_image_template(
-            idphoto_json,
-            result_image_hd,
-            language,
+        result_image_template, result_image_template_visible = (
+            self._generate_image_template(
+                idphoto_json,
+                result_image_hd,
+                language,
+            )
         )
 
         # 调整图片大小
@@ -390,23 +399,27 @@ class IDPhotoProcessor:
             idphoto_json,
             format="jpeg" if idphoto_json["jpeg_format_option"] else "png",
         )
-        
+
         # 返回
         if result_image_layout is not None:
             result_image_layout = output_image_path_dict["layout"]["path"]
-            
+
         return self._create_response(
             output_image_path_dict["standard"]["path"],
             output_image_path_dict["hd"]["path"],
             result_image_standard_png,
             result_image_hd_png,
             gr.update(value=result_image_layout, visible=result_image_layout_visible),
-            gr.update(value=result_image_template, visible=result_image_template_visible),
-            gr.update(visible = result_image_template_visible),
+            gr.update(
+                value=result_image_template, visible=result_image_template_visible
+            ),
+            gr.update(visible=result_image_template_visible),
         )
 
     # 渲染背景
-    def _render_background(self, result_image_standard, result_image_hd, idphoto_json, language):
+    def _render_background(
+        self, result_image_standard, result_image_hd, idphoto_json, language
+    ):
         """渲染背景"""
         render_modes = {0: "pure_color", 1: "updown_gradient", 2: "center_gradient"}
         render_mode = render_modes[idphoto_json["render_mode"]]
@@ -414,7 +427,9 @@ class IDPhotoProcessor:
         if idphoto_json["color_mode"] != LOCALES["bg_color"][language]["choices"][-3]:
             result_image_standard = np.uint8(
                 add_background(
-                    result_image_standard, bgr=idphoto_json["color_bgr"], mode=render_mode
+                    result_image_standard,
+                    bgr=idphoto_json["color_bgr"],
+                    mode=render_mode,
                 )
             )
             result_image_hd = np.uint8(
@@ -426,14 +441,18 @@ class IDPhotoProcessor:
         else:
             result_image_standard = np.uint8(
                 add_background_with_image(
-                    result_image_standard, 
-                    background_image=cv2.imread(os.path.join(base_path, "assets", "american-style.png"))
+                    result_image_standard,
+                    background_image=cv2.imread(
+                        os.path.join(base_path, "assets", "american-style.png")
+                    ),
                 )
             )
             result_image_hd = np.uint8(
                 add_background_with_image(
-                    result_image_hd, 
-                    background_image=cv2.imread(os.path.join(base_path, "assets", "american-style.png"))
+                    result_image_hd,
+                    background_image=cv2.imread(
+                        os.path.join(base_path, "assets", "american-style.png")
+                    ),
                 )
             )
         return result_image_standard, result_image_hd
@@ -455,19 +474,19 @@ class IDPhotoProcessor:
             choice: shape
             for choice, shape in zip(
                 LOCALES["print_switch"][language]["choices"],
-                LOCALES["print_switch"]["shape"]
+                LOCALES["print_switch"]["shape"],
             )
         }
-        
+
         choose_layout_size = PRESET_LAYOUT_SIZE[idphoto_json["print_switch"]]
-        
+
         typography_arr, typography_rotate = generate_layout_array(
             input_height=idphoto_json["size"][0],
             input_width=idphoto_json["size"][1],
-            LAYOUT_HEIGHT= choose_layout_size[0],
-            LAYOUT_WIDTH= choose_layout_size[1],
+            LAYOUT_HEIGHT=choose_layout_size[0],
+            LAYOUT_WIDTH=choose_layout_size[1],
         )
-        
+
         result_image_layout = generate_layout_image(
             result_image_standard,
             typography_arr,
@@ -480,7 +499,7 @@ class IDPhotoProcessor:
         )
 
         return result_image_layout, True
-    
+
     # 生成模板照片
     def _generate_image_template(
         self,
@@ -491,7 +510,7 @@ class IDPhotoProcessor:
         # 如果选择了只换底，则不生成模板照片
         if idphoto_json["size_mode"] in LOCALES["size_mode"][language]["choices"][1]:
             return None, False
-        
+
         TEMPLATE_NAME_LIST = ["template_1", "template_2"]
         """生成模板照片"""
         result_image_template_list = []
@@ -540,6 +559,7 @@ class IDPhotoProcessor:
     ):
         # 设置输出路径（临时目录）
         import tempfile
+
         base_path = tempfile.mkdtemp()
         timestamp = int(time.time())
         output_paths = {
@@ -607,7 +627,7 @@ class IDPhotoProcessor:
                 if key == "layout" and result_image_layout is None:
                     continue
                 output_paths[key]["path"] += f".{format}"
-                
+
                 # 只调整标准图像大小
                 resize_image_to_kb(
                     result_image_standard,
@@ -615,7 +635,7 @@ class IDPhotoProcessor:
                     custom_kb,
                     dpi=300,
                 )
-                
+
                 # 保存高清图像和排版图像
                 save_image_dpi_to_bytes(
                     result_image_hd, output_paths["hd"]["path"], dpi=300
@@ -627,11 +647,11 @@ class IDPhotoProcessor:
 
             return output_paths
         # 没有自定义设置
-        else: 
+        else:
             output_paths["standard"]["path"] += f".{format}"
             output_paths["hd"]["path"] += f".{format}"
             output_paths["layout"]["path"] += f".{format}"
-            
+
             # 保存所有图像
             save_image_dpi_to_bytes(
                 result_image_standard, output_paths["standard"]["path"], dpi=300
@@ -643,9 +663,8 @@ class IDPhotoProcessor:
                 save_image_dpi_to_bytes(
                     result_image_layout, output_paths["layout"]["path"], dpi=300
                 )
-                
+
             return output_paths
-            
 
     def _create_response(
         self,
@@ -656,7 +675,7 @@ class IDPhotoProcessor:
         result_layout_image_gr,
         result_image_template_gr,
         result_image_template_accordion_gr,
-    ):    
+    ):
         """创建响应"""
         response = [
             result_image_standard,
@@ -680,3 +699,144 @@ class IDPhotoProcessor:
             ),
             None,
         ]
+
+    def batch_process(
+        self,
+        files,
+        mode_option,
+        size_list_option,
+        color_option,
+        render_option,
+        image_kb_options,
+        custom_color_R,
+        custom_color_G,
+        custom_color_B,
+        custom_color_hex_value,
+        custom_size_height,
+        custom_size_width,
+        custom_size_height_mm,
+        custom_size_width_mm,
+        custom_image_kb,
+        language,
+        matting_model_option,
+        watermark_option,
+        watermark_text,
+        watermark_text_color,
+        watermark_text_size,
+        watermark_text_opacity,
+        watermark_text_angle,
+        watermark_text_space,
+        face_detect_option,
+        head_measure_ratio=0.2,
+        top_distance_max=0.12,
+        whitening_strength=0,
+        image_dpi_option=False,
+        custom_image_dpi=None,
+        brightness_strength=0,
+        contrast_strength=0,
+        sharpen_strength=0,
+        saturation_strength=0,
+        plugin_option=[],
+        print_switch=None,
+    ):
+        """批量处理照片"""
+        results = []
+        total_files = len(files)
+
+        # 导入datetime和TaskHistory类
+        from datetime import datetime
+        from task_history import TaskHistory
+
+        task_history = TaskHistory()
+
+        for i, file in enumerate(files):
+            # 生成唯一任务ID
+            task_id = f"task_{datetime.now().strftime('%Y%m%d%H%M%S')}_{i}"
+
+            # 添加任务到历史记录
+            task_history.add_task(task_id, file.name, status="Processing")
+
+            try:
+                # 读取图片
+                input_image = cv2.imread(file.name)
+                if input_image is None:
+                    error_msg = "无法读取图片文件"
+                    results.append(
+                        {
+                            "task_id": task_id,
+                            "file_name": file.name,
+                            "status": "Failed",
+                            "error": error_msg,
+                        }
+                    )
+                    # 更新任务状态
+                    task_history.update_task(task_id, "Failed", error_msg)
+                    continue
+
+                # 处理图片
+                result = self.process(
+                    input_image,
+                    mode_option,
+                    size_list_option,
+                    color_option,
+                    render_option,
+                    image_kb_options,
+                    custom_color_R,
+                    custom_color_G,
+                    custom_color_B,
+                    custom_color_hex_value,
+                    custom_size_height,
+                    custom_size_width,
+                    custom_size_height_mm,
+                    custom_size_width_mm,
+                    custom_image_kb,
+                    language,
+                    matting_model_option,
+                    watermark_option,
+                    watermark_text,
+                    watermark_text_color,
+                    watermark_text_size,
+                    watermark_text_opacity,
+                    watermark_text_angle,
+                    watermark_text_space,
+                    face_detect_option,
+                    head_measure_ratio,
+                    top_distance_max,
+                    whitening_strength,
+                    image_dpi_option,
+                    custom_image_dpi,
+                    brightness_strength,
+                    contrast_strength,
+                    sharpen_strength,
+                    saturation_strength,
+                    plugin_option,
+                    print_switch,
+                )
+
+                # 保存结果
+                results.append(
+                    {
+                        "task_id": task_id,
+                        "file_name": file.name,
+                        "status": "Completed",
+                        "result": result,
+                    }
+                )
+
+                # 更新任务状态
+                task_history.update_task(task_id, "Completed")
+
+            except Exception as e:
+                error_msg = str(e)
+                results.append(
+                    {
+                        "task_id": task_id,
+                        "file_name": file.name,
+                        "status": "Failed",
+                        "error": error_msg,
+                    }
+                )
+                # 更新任务状态
+                task_history.update_task(task_id, "Failed", error_msg)
+
+        return results
