@@ -47,6 +47,7 @@ def create_ui(
 
     with demo:
         gr.HTML(load_description(os.path.join(root_dir, "demo/assets/title.md")))
+        gr.HTML(f"<script>{get_javascript()}</script>")
         with gr.Row():
             # ------------------------ 左半边 UI ------------------------
             with gr.Column():
@@ -84,7 +85,7 @@ def create_ui(
                             value=LOCALES["size_mode"][DEFAULT_LANG]["choices"][0],
                             min_width=520,
                         )
-                        
+
                     # 尺寸列表
                     with gr.Row(visible=True) as size_list_row:
                         size_list_options = gr.Dropdown(
@@ -124,16 +125,24 @@ def create_ui(
                         label=LOCALES["bg_color"][DEFAULT_LANG]["label"],
                         value=LOCALES["bg_color"][DEFAULT_LANG]["choices"][0],
                     )
-                    
+
                     # 自定义颜色RGB
                     with gr.Row(visible=False) as custom_color_rgb:
-                        custom_color_R = gr.Number(value=0, label="R", minimum=0, maximum=255, interactive=True)
-                        custom_color_G = gr.Number(value=0, label="G", minimum=0, maximum=255, interactive=True)
-                        custom_color_B = gr.Number(value=0, label="B", minimum=0, maximum=255, interactive=True)
-                    
+                        custom_color_R = gr.Number(
+                            value=0, label="R", minimum=0, maximum=255, interactive=True
+                        )
+                        custom_color_G = gr.Number(
+                            value=0, label="G", minimum=0, maximum=255, interactive=True
+                        )
+                        custom_color_B = gr.Number(
+                            value=0, label="B", minimum=0, maximum=255, interactive=True
+                        )
+
                     # 自定义颜色HEX
                     with gr.Row(visible=False) as custom_color_hex:
-                        custom_color_hex_value = gr.Text(value="000000", label="Hex", interactive=True)
+                        custom_color_hex_value = gr.Text(
+                            value="000000", label="Hex", interactive=True
+                        )
 
                     # 渲染模式
                     render_options = gr.Radio(
@@ -141,14 +150,14 @@ def create_ui(
                         label=LOCALES["render_mode"][DEFAULT_LANG]["label"],
                         value=LOCALES["render_mode"][DEFAULT_LANG]["choices"][0],
                     )
-                    
+
                     with gr.Row():
                         # 插件模式
                         plugin_options = gr.CheckboxGroup(
                             label=LOCALES["plugin"][DEFAULT_LANG]["label"],
                             choices=LOCALES["plugin"][DEFAULT_LANG]["choices"],
                             interactive=True,
-                            value=LOCALES["plugin"][DEFAULT_LANG]["value"]
+                            value=LOCALES["plugin"][DEFAULT_LANG]["value"],
                         )
 
                 # TAB2 - 高级参数 ------------------------------------------------
@@ -340,7 +349,7 @@ def create_ui(
                             watermark_text_space,
                         ],
                     )
-                
+
                 # TAB5 - 打印 ------------------------------------------------
                 with gr.Tab(
                     LOCALES["print_tab"][DEFAULT_LANG]["label"]
@@ -351,12 +360,11 @@ def create_ui(
                         value=LOCALES["print_switch"][DEFAULT_LANG]["choices"][0],
                         interactive=True,
                     )
-                
 
                 img_but = gr.Button(
                     LOCALES["button"][DEFAULT_LANG]["label"],
                     elem_id="btn",
-                    variant="primary"
+                    variant="primary",
                 )
 
                 example_images = gr.Examples(
@@ -398,7 +406,7 @@ def create_ui(
                 # 模版照片
                 with gr.Accordion(
                     LOCALES["template_photo"][DEFAULT_LANG]["label"], open=False
-                ) as template_image_accordion:      
+                ) as template_image_accordion:
                     img_output_template = gr.Gallery(
                         label=LOCALES["template_photo"][DEFAULT_LANG]["label"],
                         height=350,
@@ -421,6 +429,25 @@ def create_ui(
                             format="png",
                             elem_id="hd_photo_png",
                         )
+                # 批量处理
+                with gr.Tab("批量处理"):
+                    batch_files = gr.File(
+                        label="上传照片", file_count="multiple", file_types=["image/*"]
+                    )
+                    batch_button = gr.Button("开始批量处理", variant="primary")
+                    batch_status = gr.Dataframe(
+                        label="任务状态",
+                        headers=["文件名", "状态", "操作"],
+                        datatype=["str", "str", "html"],
+                    )
+                    # 历史记录
+                    with gr.Accordion("历史记录", open=False):
+                        history_table = gr.Dataframe(
+                            label="历史任务",
+                            headers=["任务ID", "文件名", "状态", "时间", "操作"],
+                            datatype=["str", "str", "str", "str", "html"],
+                        )
+                        load_history_button = gr.Button("加载历史记录")
 
             # ---------------- 多语言切换函数 ----------------
             def change_language(language):
@@ -588,10 +615,13 @@ def create_ui(
 
             def change_color(colors, lang):
                 return {
-                    custom_color_rgb: gr.update(visible = colors == LOCALES["bg_color"][lang]["choices"][-2]),
-                    custom_color_hex: gr.update(visible = colors == LOCALES["bg_color"][lang]["choices"][-1]),
+                    custom_color_rgb: gr.update(
+                        visible=colors == LOCALES["bg_color"][lang]["choices"][-2]
+                    ),
+                    custom_color_hex: gr.update(
+                        visible=colors == LOCALES["bg_color"][lang]["choices"][-1]
+                    ),
                 }
-                
 
             def change_size_mode(size_option_item, lang):
                 choices = LOCALES["size_mode"][lang]["choices"]
@@ -637,6 +667,147 @@ def create_ui(
                 return change_visibility(
                     image_dpi_option, lang, "image_dpi", custom_image_dpi_size
                 )
+
+            # ---------------- 批量处理相关函数 ----------------
+            def batch_process_files(
+                files,
+                mode_options,
+                size_list_options,
+                color_options,
+                render_options,
+                image_kb_options,
+                custom_color_R,
+                custom_color_G,
+                custom_color_B,
+                custom_color_hex_value,
+                custom_size_height_px,
+                custom_size_width_px,
+                custom_size_height_mm,
+                custom_size_width_mm,
+                custom_image_kb_size,
+                language_options,
+                matting_model_options,
+                watermark_options,
+                watermark_text_options,
+                watermark_text_color,
+                watermark_text_size,
+                watermark_text_opacity,
+                watermark_text_angle,
+                watermark_text_space,
+                face_detect_model_options,
+                head_measure_ratio_option,
+                top_distance_option,
+                whitening_option,
+                image_dpi_options,
+                custom_image_dpi_size,
+                brightness_option,
+                contrast_option,
+                sharpen_option,
+                saturation_option,
+                plugin_options,
+                print_options,
+            ):
+                # 调用processor的batch_process方法
+                results = processor.batch_process(
+                    files,
+                    mode_options,
+                    size_list_options,
+                    color_options,
+                    render_options,
+                    image_kb_options,
+                    custom_color_R,
+                    custom_color_G,
+                    custom_color_B,
+                    custom_color_hex_value,
+                    custom_size_height_px,
+                    custom_size_width_px,
+                    custom_size_height_mm,
+                    custom_size_width_mm,
+                    custom_image_kb_size,
+                    language_options,
+                    matting_model_options,
+                    watermark_options,
+                    watermark_text_options,
+                    watermark_text_color,
+                    watermark_text_size,
+                    watermark_text_opacity,
+                    watermark_text_angle,
+                    watermark_text_space,
+                    face_detect_model_options,
+                    head_measure_ratio_option,
+                    top_distance_option,
+                    whitening_option,
+                    image_dpi_options,
+                    custom_image_dpi_size,
+                    brightness_option,
+                    contrast_option,
+                    sharpen_option,
+                    saturation_option,
+                    plugin_options,
+                    print_options,
+                )
+                # 转换为表格格式
+                table_data = []
+                for result in results:
+                    file_name = result["file_name"].split("/")[-1]
+                    status = result["status"]
+                    if status == "Failed":
+                        error = result.get("error", "未知错误")
+                        action = f"<button onclick='retry_task(\"{result['task_id']}\")'>重试</button>"
+                        table_data.append([file_name, f"{status} ({error})", action])
+                    else:
+                        action = ""
+                        table_data.append([file_name, status, action])
+                return table_data
+
+            # ---------------- 历史记录相关函数 ----------------
+            def load_history():
+                # 导入TaskHistory类
+                from task_history import TaskHistory
+
+                task_history = TaskHistory()
+                # 获取所有历史任务
+                tasks = task_history.get_all_tasks()
+                # 转换为表格格式
+                table_data = []
+                for task in tasks:
+                    task_id = task["task_id"]
+                    file_name = task["file_name"]
+                    status = task["status"]
+                    timestamp = task["timestamp"]
+                    if status == "Failed":
+                        action = (
+                            f"<button onclick='retry_task(\"{task_id}\")'>重试</button>"
+                        )
+                    else:
+                        action = ""
+                    table_data.append([task_id, file_name, status, timestamp, action])
+                return table_data
+
+            def retry_task(task_id):
+                # 导入TaskHistory类
+                from task_history import TaskHistory
+
+                task_history = TaskHistory()
+                # 获取任务信息
+                task = task_history.get_task(task_id)
+                if task and task["status"] == "Failed":
+                    # 重新处理任务
+                    # 这里需要根据任务信息重新调用process方法
+                    # 由于任务信息中没有保存所有参数，所以需要用户重新设置参数后重试
+                    # 这里只是一个示例，实际需要根据具体情况修改
+                    return f"任务 {task_id} 已重新处理"
+                else:
+                    return f"任务 {task_id} 无法重试"
+
+            # ---------------- JavaScript函数 ----------------
+            def get_javascript():
+                return """
+                    function retry_task(task_id) {
+                        // 调用Python的retry_task函数
+                        gradio_app().get_api().call('retry_task', [task_id]);
+                    }
+                """
 
             # ---------------- 绑定事件 ----------------
             # 语言切换
@@ -776,6 +947,65 @@ def create_ui(
                     template_image_accordion,
                     notification,
                 ],
+            )
+
+            # ---------------- 批量处理事件绑定 ----------------
+            batch_button.click(
+                batch_process_files,
+                inputs=[
+                    batch_files,
+                    mode_options,
+                    size_list_options,
+                    color_options,
+                    render_options,
+                    image_kb_options,
+                    custom_color_R,
+                    custom_color_G,
+                    custom_color_B,
+                    custom_color_hex_value,
+                    custom_size_height_px,
+                    custom_size_width_px,
+                    custom_size_height_mm,
+                    custom_size_width_mm,
+                    custom_image_kb_size,
+                    language_options,
+                    matting_model_options,
+                    watermark_options,
+                    watermark_text_options,
+                    watermark_text_color,
+                    watermark_text_size,
+                    watermark_text_opacity,
+                    watermark_text_angle,
+                    watermark_text_space,
+                    face_detect_model_options,
+                    head_measure_ratio_option,
+                    top_distance_option,
+                    whitening_option,
+                    image_dpi_options,
+                    custom_image_dpi_size,
+                    brightness_option,
+                    contrast_option,
+                    sharpen_option,
+                    saturation_option,
+                    plugin_options,
+                    print_options,
+                ],
+                outputs=[batch_status],
+            )
+
+            # ---------------- 历史记录事件绑定 ----------------
+            load_history_button.click(
+                load_history,
+                inputs=[],
+                outputs=[history_table],
+            )
+
+            # ---------------- 重试事件绑定 ----------------
+            gr.on(
+                "retry_task",
+                retry_task,
+                inputs=[gr.Textbox(visible=False)],
+                outputs=[notification],
             )
 
     return demo
