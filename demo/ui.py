@@ -258,6 +258,26 @@ def create_ui(
                 with gr.Tab(
                     LOCALES["watermark_tab"][DEFAULT_LANG]["label"]
                 ) as watermark_parameter_tab:
+
+                # TAB5 - 批量处理 ------------------------------------------------
+                with gr.Tab(
+                    LOCALES["batch_process"][DEFAULT_LANG]["label"]
+                ) as batch_process_tab:
+                    # 批量上传组件
+                    img_batch_input = gr.Files(label="Upload Multiple Photos", file_count="multiple", type="image")
+                    
+                    # 处理按钮
+                    batch_process_btn = gr.Button(value="Start Batch Processing")
+                    
+                    # 进度显示组件
+                    batch_progress = gr.Progress()
+                    batch_status = gr.Text(label="Batch Processing Status")
+                    
+                    # 结果展示组件
+                    batch_output = gr.Gallery(label="Batch Processing Results", columns=3, rows=None)
+                    
+                    # 批量下载按钮
+                    batch_download_btn = gr.Button(value="Download All Results")
                     watermark_options = gr.Radio(
                         choices=LOCALES["watermark_switch"][DEFAULT_LANG]["choices"],
                         label=LOCALES["watermark_switch"][DEFAULT_LANG]["label"],
@@ -577,6 +597,9 @@ def create_ui(
                         choices=LOCALES["print_switch"][language]["choices"],
                         value=LOCALES["print_switch"][language]["choices"][0],
                     ),
+                    batch_process_tab: gr.update(
+                        label=LOCALES["batch_process"][language]["label"]
+                    ),
                 }
 
             def change_visibility(option, lang, locales_key, custom_component):
@@ -775,6 +798,53 @@ def create_ui(
                     img_output_template,
                     template_image_accordion,
                     notification,
+                ],
+            )
+            
+            # 批量处理按钮点击事件
+            batch_process_btn.click(
+                processor.batch_process,
+                inputs=[
+                    img_batch_input,
+                    mode_options,
+                    size_list_options,
+                    color_options,
+                    render_options,
+                    image_kb_options,
+                    custom_color_R,
+                    custom_color_G,
+                    custom_color_B,
+                    custom_color_hex_value,
+                    custom_size_height_px,
+                    custom_size_width_px,
+                    custom_size_height_mm,
+                    custom_size_width_mm,
+                    custom_image_kb_size,
+                    language_options,
+                    matting_model_options,
+                    watermark_options,
+                    watermark_text_options,
+                    watermark_text_color,
+                    watermark_text_size,
+                    watermark_text_opacity,
+                    watermark_text_angle,
+                    watermark_text_space,
+                    face_detect_model_options,
+                    head_measure_ratio_option,
+                    top_distance_option,
+                    whitening_option,
+                    image_dpi_options,
+                    custom_image_dpi_size,
+                    brightness_option,
+                    contrast_option,
+                    sharpen_option,
+                    saturation_option,
+                    plugin_options,
+                    print_options,
+                ],
+                outputs=[
+                    batch_output,
+                    batch_status,
                 ],
             )
 

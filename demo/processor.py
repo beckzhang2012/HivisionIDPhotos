@@ -25,6 +25,106 @@ from demo.locales import LOCALES
 base_path = os.path.dirname(os.path.abspath(__file__))
 
 class IDPhotoProcessor:
+    def batch_process(
+        self,
+        input_images,
+        mode_option,
+        size_list_option,
+        color_option,
+        render_option,
+        image_kb_options,
+        custom_color_R,
+        custom_color_G,
+        custom_color_B,
+        custom_color_hex_value,
+        custom_size_height,
+        custom_size_width,
+        custom_size_height_mm,
+        custom_size_width_mm,
+        custom_image_kb,
+        language,
+        matting_model_option,
+        watermark_option,
+        watermark_text,
+        watermark_text_color,
+        watermark_text_size,
+        watermark_text_opacity,
+        watermark_text_angle,
+        watermark_text_space,
+        face_detect_option,
+        head_measure_ratio=0.2,
+        top_distance_max=0.12,
+        whitening_strength=0,
+        image_dpi_option=False,
+        custom_image_dpi=None,
+        brightness_strength=0,
+        contrast_strength=0,
+        sharpen_strength=0,
+        saturation_strength=0,
+        plugin_option=[],
+        print_switch=None,
+    ):
+        results = []
+        if not input_images:
+            return results, "No images uploaded."
+        
+        total_images = len(input_images)
+        for i, image in enumerate(input_images):
+            # 更新进度
+            progress = (i + 1) / total_images
+            gr.Progress().update(progress=progress, desc=f"Processing image {i + 1} of {total_images}")
+            
+            # 处理单张照片
+            try:
+                result = self.process(
+                    input_image=image,
+                    mode_option=mode_option,
+                    size_list_option=size_list_option,
+                    color_option=color_option,
+                    render_option=render_option,
+                    image_kb_options=image_kb_options,
+                    custom_color_R=custom_color_R,
+                    custom_color_G=custom_color_G,
+                    custom_color_B=custom_color_B,
+                    custom_color_hex_value=custom_color_hex_value,
+                    custom_size_height=custom_size_height,
+                    custom_size_width=custom_size_width,
+                    custom_size_height_mm=custom_size_height_mm,
+                    custom_size_width_mm=custom_size_width_mm,
+                    custom_image_kb=custom_image_kb,
+                    language=language,
+                    matting_model_option=matting_model_option,
+                    watermark_option=watermark_option,
+                    watermark_text=watermark_text,
+                    watermark_text_color=watermark_text_color,
+                    watermark_text_size=watermark_text_size,
+                    watermark_text_opacity=watermark_text_opacity,
+                    watermark_text_angle=watermark_text_angle,
+                    watermark_text_space=watermark_text_space,
+                    face_detect_option=face_detect_option,
+                    head_measure_ratio=head_measure_ratio,
+                    top_distance_max=top_distance_max,
+                    whitening_strength=whitening_strength,
+                    image_dpi_option=image_dpi_option,
+                    custom_image_dpi=custom_image_dpi,
+                    brightness_strength=brightness_strength,
+                    contrast_strength=contrast_strength,
+                    sharpen_strength=sharpen_strength,
+                    saturation_strength=saturation_strength,
+                    plugin_option=plugin_option,
+                    print_switch=print_switch,
+                )
+                
+                # 取标准照结果
+                if result and len(result) > 0:
+                    results.append(result[0])
+            except Exception as e:
+                print(f"Error processing image {i + 1}: {str(e)}")
+                continue
+        
+        status = f"Batch processing completed. Successfully processed {len(results)} of {total_images} images."
+        return results, status
+    
     def process(
         self,
         input_image,
