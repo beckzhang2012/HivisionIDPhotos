@@ -1,5 +1,10 @@
+import sys
 import os
-from demo.utils import csv_to_size_list, csv_to_color_list
+
+# 添加当前目录到Python路径
+sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+
+from utils import csv_to_size_list, csv_to_color_list
 
 
 def load_configuration(root_dir):
